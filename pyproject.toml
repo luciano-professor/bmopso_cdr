@@ -1,0 +1,59 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bmopso_cdr"
+version = "1.0.0"
+description = "Binary Multiobjective Particle Swarm Optimization using Crowding Distance and Roulette Wheel (BMOPSO-CDR) for pymoo"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [
+    { name = "Luciano Soares de Souza", email = "43418124+luciano-professor@users.noreply.github.com" }
+]
+keywords = [
+    "optimization",
+    "multiobjective-optimization",
+    "binary-optimization",
+    "particle-swarm-optimization",
+    "pso",
+    "pymoo",
+    "crowding-distance",
+    "swarm-intelligence",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    "numpy>=1.20.0",
+    "pymoo>=0.6.0",
+    "pymoo-binary-problems>=0.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/luciano-professor/bmopso_cdr"
+Repository = "https://github.com/luciano-professor/bmopso_cdr"
+Issues = "https://github.com/luciano-professor/bmopso_cdr/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
