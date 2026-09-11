@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.1] - 2026-09-11
+
+### Changed
+- **License**: Changed project license from MIT to Apache License 2.0.
+- **Metadata & Documentation**:
+  - Updated PyPI Trove classifier to `License :: OSI Approved :: Apache Software License` in `pyproject.toml`.
+  - Updated license badge and added explicit License section to `README.md`.
+
+---
+
 ## [1.0.0] - 2026-08-28
 
 ### Added
