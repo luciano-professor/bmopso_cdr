@@ -40,26 +40,26 @@ def calc_crowding_distance(f: np.ndarray) -> np.ndarray:
     np.ndarray
         1D array containing the crowding distance of each solution.
     """
-    n_points, n_obj = f.shape
+    n_points = f.shape[0]
     if n_points <= 2:
         return np.full(n_points, np.inf)
 
+    # Sort each objective independently: order[i, m] is the i-th ranked point in objective m.
+    order = np.argsort(f, axis=0, kind="mergesort")
+    f_sorted = np.take_along_axis(f, order, axis=0)
+    norms = f_sorted[-1] - f_sorted[0]
+    safe_norms = np.where(norms == 0.0, 1.0, norms)
+
+    # Interior contribution: (f_m(i+1) - f_m(i-1)) / (f_m_max - f_m_min)
+    deltas = (f_sorted[2:] - f_sorted[:-2]) / safe_norms
+    deltas = np.where(norms == 0.0, 0.0, deltas)
+
     cd = np.zeros(n_points, dtype=float)
-    for m in range(n_obj):
-        sorted_idx = np.argsort(f[:, m])
-        f_sorted = f[sorted_idx, m]
+    np.add.at(cd, order[1:-1].ravel(), deltas.ravel())
 
-        # Boundary solutions receive infinite distance
-        cd[sorted_idx[0]] = np.inf
-        cd[sorted_idx[-1]] = np.inf
-
-        norm = f_sorted[-1] - f_sorted[0]
-        if norm == 0.0:
-            continue
-
-        for i in range(1, n_points - 1):
-            cd[sorted_idx[i]] += (f_sorted[i + 1] - f_sorted[i - 1]) / norm
-
+    # Boundary solutions receive infinite distance in every objective
+    cd[order[0]] = np.inf
+    cd[order[-1]] = np.inf
     return cd
 
 

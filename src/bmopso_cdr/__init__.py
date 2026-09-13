@@ -20,7 +20,7 @@ via `pymoo-binary-problems`.
 from .algorithms.bmopso_cdr import BMOPSOCDR
 from .util.archive import NonDominatedArchive
 
-__version__ = "1.0.1"
+__version__ = "1.1.0"
 
 __all__ = [
     "__version__",

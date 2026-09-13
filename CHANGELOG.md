@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.0] - 2026-09-13
+
+### Changed
+- **Crowding Distance**: Vectorized Deb/Santana CD with stable `mergesort` tie-breaking.
+- **RNG**: All algorithm draws now use pymoo's `self.random_state` (`np.random.Generator`).
+  `minimize(..., seed=s)` is reproducible; the `np.random` singleton is no longer used in `src/`.
+
+### Added
+- Pytest coverage for same-seed reproducibility (`X`, `F`, `V`) and a guard against global `np.random` in source.
+
+---
+
 ## [1.0.1] - 2026-09-11
 
 ### Changed

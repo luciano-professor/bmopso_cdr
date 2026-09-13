@@ -146,6 +146,49 @@ def test_binary_mopso_optimization() -> None:
     assert np.all(np.sum(res.F, axis=1) == n_vars)
 
 
+def test_bmopso_cdr_same_seed_is_reproducible() -> None:
+    """The same pymoo seed must reproduce X, F, and velocities across independent runs.
+
+    Global ``np.random`` is deliberately polluted so a leak to the singleton RNG
+    would make the two runs diverge.
+    """
+    problem = SimpleBinaryProblem(n_var=12)
+
+    def run(seed: int) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        np.random.seed(12345)
+        _ = np.random.rand(2048)
+        algo = BMOPSOCDR(n_particles=16, w=0.5, c1=1.5, c2=1.5)
+        res = minimize(problem, algo, termination=("n_gen", 6), seed=seed, verbose=False)
+        evolved = res.algorithm
+        assert res.X is not None and res.F is not None and evolved.V is not None
+        assert isinstance(evolved.random_state, np.random.Generator)
+        return res.X.copy(), res.F.copy(), evolved.V.copy()
+
+    x1, f1, v1 = run(42)
+    np.random.seed(999)
+    _ = np.random.randint(0, 100, size=4096)
+    x2, f2, v2 = run(42)
+    assert np.array_equal(x1, x2)
+    assert np.allclose(f1, f2)
+    assert np.allclose(v1, v2)
+
+
+def test_src_does_not_use_global_numpy_random() -> None:
+    """Source must not call the np.random singleton; only Generator / default_rng."""
+    from pathlib import Path
+    import re
+
+    forbidden = re.compile(r"np\.random\.(rand|randint|choice|seed|uniform|random)\b")
+    src_root = Path(__file__).resolve().parents[1] / "src" / "bmopso_cdr"
+    offenders: list[str] = []
+    for path in src_root.rglob("*.py"):
+        for lineno, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+            if forbidden.search(line):
+                rel = path.relative_to(src_root)
+                offenders.append(f"{rel}:{lineno}: {line.strip()}")
+    assert offenders == [], "Forbidden global np.random usage:\n" + "\n".join(offenders)
+
+
 def test_crowding_distance_calculation() -> None:
     """Verify Crowding Distance and Roulette probabilities calculation according to Santana et al. (2009)."""
     from bmopso_cdr.util.diversity import (
@@ -161,9 +204,10 @@ def test_crowding_distance_calculation() -> None:
     assert np.isinf(cd[0])
     assert np.isinf(cd[-1])
 
-    # 2. Internal points must have positive finite distances
-    assert np.isfinite(cd[1]) and cd[1] > 0.0
-    assert np.isfinite(cd[2]) and cd[2] > 0.0
+    # 2. Internal points match the vectorized Deb/Santana formula:
+    #    CD(i) = sum_m (f_m(i+1) - f_m(i-1)) / (f_m_max - f_m_min)
+    assert np.isclose(cd[1], (4.0 - 1.0) / 5.0 + (10.0 - 4.0) / 9.0)
+    assert np.isclose(cd[2], (6.0 - 2.0) / 5.0 + (7.0 - 1.0) / 9.0)
 
     # 3. Roulette probabilities must sum to 1.0 and be strictly positive
     probs = calc_crowding_roulette_probabilities(cd)

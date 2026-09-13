@@ -60,6 +60,7 @@ class NonDominatedArchive:
         x: np.ndarray,
         f: np.ndarray,
         cv: np.ndarray | None = None,
+        random_state: np.random.Generator | None = None,
     ) -> None:
         """Update archive with candidate solutions, filtering by dominance and pruning by crowding.
 
@@ -71,6 +72,8 @@ class NonDominatedArchive:
             Objective values matrix of shape (N, n_obj).
         cv : np.ndarray | None, default=None
             Total constraint violations of shape (N,). If None, defaults to 0.0.
+        random_state : np.random.Generator | None, default=None
+            NumPy Generator accepted for API compatibility with the algorithm RNG.
         """
         if cv is None:
             cv = np.zeros(len(x), dtype=float)
@@ -110,13 +113,19 @@ class NonDominatedArchive:
             self._f = non_dom_f
             self._cv = non_dom_cv
 
-    def select_leaders(self, n_particles: int) -> np.ndarray:
+    def select_leaders(
+        self,
+        n_particles: int,
+        random_state: np.random.Generator | None = None,
+    ) -> np.ndarray:
         """Select social leaders (gbest) for each particle via Crowding Distance Roulette (CDR).
 
         Parameters
         ----------
         n_particles : int
             Number of particles in the swarm.
+        random_state : np.random.Generator | None, default=None
+            NumPy Generator used for roulette-wheel sampling. If None, uses an isolated default_rng().
 
         Returns
         -------
@@ -126,9 +135,10 @@ class NonDominatedArchive:
         if self._x is None or self._f is None or len(self._x) == 0:
             raise RuntimeError("Cannot select leaders from an empty archive.")
 
+        rng = random_state if random_state is not None else np.random.default_rng()
         cd = calc_crowding_distance(self._f)
         probs = calc_crowding_roulette_probabilities(cd)
-        leader_indices = np.random.choice(len(self._x), size=n_particles, p=probs)
+        leader_indices = rng.choice(len(self._x), size=n_particles, p=probs)
         return self._x[leader_indices]
 
     def get_crowding_distance(self) -> np.ndarray:

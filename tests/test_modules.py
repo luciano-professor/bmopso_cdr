@@ -45,7 +45,14 @@ def test_diversity_metrics_isolated() -> None:
     f = np.array([[1.0, 4.0], [2.0, 3.0], [3.0, 2.0], [4.0, 1.0]])
     cd = calc_crowding_distance(f)
     assert np.isinf(cd[0]) and np.isinf(cd[-1])
-    assert cd[1] > 0 and cd[2] > 0
+    assert np.isclose(cd[1], (3.0 - 1.0) / 3.0 + (4.0 - 2.0) / 3.0)
+    assert np.isclose(cd[2], (4.0 - 2.0) / 3.0 + (3.0 - 1.0) / 3.0)
+
+    # Constant objective must not contribute; boundaries remain infinite
+    f_deg = np.array([[1.0, 0.0], [2.0, 0.0], [3.0, 0.0]])
+    cd_deg = calc_crowding_distance(f_deg)
+    assert np.isinf(cd_deg[0]) and np.isinf(cd_deg[-1])
+    assert np.isclose(cd_deg[1], (3.0 - 1.0) / 2.0)
 
     probs = calc_crowding_roulette_probabilities(cd)
     assert np.isclose(np.sum(probs), 1.0)
