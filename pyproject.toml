@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bmopso_cdr"
-version = "1.1.0"
+version = "1.0.2"
 description = "Binary Multiobjective Particle Swarm Optimization using Crowding Distance and Roulette Wheel (BMOPSO-CDR) for pymoo"
 readme = "README.md"
 requires-python = ">=3.9"
